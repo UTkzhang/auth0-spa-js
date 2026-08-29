@@ -344,17 +344,25 @@ describe('Fetcher', () => {
       fetcher['setDpopProofHeader'] = jest.fn();
     });
 
-    it('rejects with GenericError missing_access_token', () =>
-      expect(fetcher['prepareRequest'](request)).rejects.toThrow(GenericError));
+    it('rejects with GenericError missing_access_token', async () => {
+      const promise = fetcher['prepareRequest'](request);
+      await expect(promise).rejects.toBeInstanceOf(GenericError);
+      await expect(promise).rejects.toMatchObject({
+        error: 'missing_access_token',
+        error_description: 'No access token available'
+      });
+    });
 
     it('does not set authorization header', async () => {
       await fetcher['prepareRequest'](request).catch(() => {});
       expect(fetcher['setAuthorizationHeader']).not.toHaveBeenCalled();
+      expect(request.headers.get('authorization')).toBeNull();
     });
 
     it('does not set DPoP header', async () => {
       await fetcher['prepareRequest'](request).catch(() => {});
       expect(fetcher['setDpopProofHeader']).not.toHaveBeenCalled();
+      expect(request.headers.get('dpop')).toBeNull();
     });
   });
 
